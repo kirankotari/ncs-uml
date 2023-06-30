@@ -202,17 +202,6 @@ class Utils(metaclass=Singleton):
     def flatset(slef, s):
         return set(chain(*s))
 
-    # def loopuntil(self, p, s):
-    #     return set(takewhile(lambda x: x!=p, s))
-
-    # def match(slef, data, regex):
-    #     result = set()
-    #     for line in data:
-    #         res = regex.match(line)
-    #         if res:
-    #             result.add(res)
-    #     return result
-
     def append_log(self, out:str, method='info'):
         if not out:
             return

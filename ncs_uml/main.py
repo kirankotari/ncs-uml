@@ -2,7 +2,7 @@ import logging
 import shutil
 from os import getcwd
 from pathlib import Path
-from utils import Singleton, Utils
+from .utils import Singleton, Utils
 
 
 class NcsUml(metaclass=Singleton):
@@ -10,6 +10,7 @@ class NcsUml(metaclass=Singleton):
     command = []
     ncs_path = None
     uml_tpath = None
+    skip_uses = False
 
     def __init__(self, *args, **kwargs):
         self.util = Utils(**kwargs)
@@ -23,6 +24,7 @@ ncs-uml <YangFileName>
         -v  | --version
         -vv | --verbose
         -h  | --help
+        --skip-uses
         """
 
     @property
@@ -88,6 +90,10 @@ ncs-uml <YangFileName>
         return pyang_path
 
     def generate(self, files):
+        if '--skip-uses' in files:
+            files.remove('--skip-uses')
+            self.skip_uses = True
+
         ncs_path = self.get_ncs_path()
         self.create_workdir(ncs_path)
         cmd = self.get_pyang()
@@ -119,7 +125,10 @@ ncs-uml <YangFileName>
         uml_file = f"{file.stem}.uml"
         self.copy_yangs(file)
         cmd += f" -f uml {file} --path={self.uml_tpath}/yang"
-        cmd += f" --uml-no=import,annotation --uml-output-directory=. 1> {uml_file} 2> /dev/null"
+        cmd += f" --uml-no=module,import,annotation"
+        if not self.skip_uses:
+            cmd += f" --uml-inline-groupings"
+        cmd += f" --uml-output-directory=. 1> {uml_file} 2> /dev/null"
         self.log.debug(f"command: {cmd}")
         self.util.cmd.call(cmd)
         self.log.info(f"uml file: {uml_file}")
@@ -130,12 +139,18 @@ ncs-uml <YangFileName>
     def clean_uml(self, uml_file):
         lines = open(f"{uml_file}", "r").readlines()
         start_index, end_index = 0, -1
+        notes = -1
         for i, line in enumerate(lines):
             if 'startuml' in line:
                 start_index = i
             if 'center footer' in line:
                 end_index = i
-        lines = [f'@startuml {Path(uml_file).stem}\n'] + lines[start_index+1:end_index] + ['@enduml', '\n']
+            if 'note top of' in line:
+                notes = i
+        if notes != -1:
+            lines = [f'@startuml {Path(uml_file).stem}\n'] + lines[start_index+1:notes] + lines[notes+1:end_index]+ ['@enduml', '\n']
+        else:
+            lines = [f'@startuml {Path(uml_file).stem}\n'] + lines[start_index+1:end_index] + ['@enduml', '\n']
         open(f"{uml_file}", "w").writelines(lines)
 
 
