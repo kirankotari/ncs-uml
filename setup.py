@@ -2,23 +2,22 @@ from setuptools import setup, find_packages
 from os import path
 from io import open
 
+import ncs_uml
+
 here = path.abspath(path.dirname(__file__))
 reqs = []
 
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open(path.join(here, '.version'), encoding='utf-8') as f:
-    version = f.read()
-
 with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
     read_lines = f.readlines()
     reqs = [each.strip() for each in read_lines]
 
 setup(
-    name = 'ncs-uml',
-    version = version,
-    description = "ncs-uml is the smartway to generate the plantuml code from yang file/s",
+    name = ncs_uml.__name__,
+    version = ncs_uml.__version__,
+    description = ncs_uml.__description__,
     long_description = long_description,
     long_description_content_type = 'text/markdown',
     url = 'https://github.com/kirankotari/ncs-uml.git',
