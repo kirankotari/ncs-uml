@@ -32,7 +32,7 @@ ncs-uml <YangFileName>
         self._help = ['-h', '--help']
         self._version = ['-v', '--version']
         self._verbose = ['-vv', '--verbose']
-        return self.util.flatset([self._help, self._version, self._verbose])
+        return self.util.flatset([['--skip-uses'], self._help, self._version, self._verbose])
 
     def get_ncs_path(self):
         ncs_path = None
