@@ -46,6 +46,9 @@ user$
 
 It returns plantUML code, which can easily converted to image.
 
+![l3vpn](l3vpn.png)
+
+Plant UML code:
 ```plantuml.server
 @startuml l3vpn
 hide empty fields 
