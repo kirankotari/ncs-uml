@@ -1,4 +1,3 @@
-import logging
 import shutil
 from os import getcwd
 from pathlib import Path
@@ -7,32 +6,44 @@ from .utils import Singleton, Utils
 
 class NcsUml(metaclass=Singleton):
     name = 'ncs-yang'
+    ncs_uml = "/tmp/.ncs_uml"
+
     command = []
     ncs_path = None
-    uml_tpath = None
     skip_uses = False
 
-    def __init__(self, *args, **kwargs):
-        self.util = Utils(**kwargs)
+    def __init__(self, opt, *args, **kwargs):
         self.path = getcwd()
+        self.util = Utils(**kwargs)
+
         self.log = self.util.log
+        self.opt = opt
 
-    @property
-    def help(self):
-        return """
-ncs-uml <YangFileName>
-        -v  | --version
-        -vv | --verbose
-        -h  | --help
-        --skip-uses
-        """
+    def create_workdir(self):
+        if self.util.file.is_folder(self.ncs_uml):
+            shutil.rmtree(self.ncs_uml)
 
-    @property
-    def options(self):
-        self._help = ['-h', '--help']
-        self._version = ['-v', '--version']
-        self._verbose = ['-vv', '--verbose']
-        return self.util.flatset([['--skip-uses'], self._help, self._version, self._verbose])
+        self.util.cmd.call(f'mkdir {self.ncs_uml}')
+
+    def copy(self, paths):
+        for each in paths:
+            self.util.cmd.call(f'cp -r {each}/* {self.ncs_uml}')
+
+    def get_dependencies(self, file):
+        dep_files = set()
+        # read makefile to identify the dependency yang files
+        makefile = f"{file.parent.parent}/Makefile"
+        if not self.util.file.is_file(makefile):
+            msg = f"could not find Makefile in the following path: {makefile}"
+            raise FileNotFoundError(msg)
+
+        mkf = self.util.make.read(makefile)
+        yang_paths = mkf.get('YANGPATH', '').split()
+        for each in yang_paths:
+            if each == '--yangpath':
+                continue
+            dep_files.add(f'{file.parent.parent}/{each}')
+        return dep_files
 
     def get_ncs_path(self):
         ncs_path = None
@@ -46,14 +57,6 @@ ncs-uml <YangFileName>
         ncs_path = Path(ncs_path).absolute()
         # returning ncs yang file path
         return f"{ncs_path.parent.parent}/src/ncs/yang"
-
-    def create_workdir(self, ncs_path):
-        self.uml_tpath = f"/tmp/.ncs_uml"
-        if self.util.file.is_folder(self.uml_tpath):
-            shutil.rmtree(self.uml_tpath)
-
-        self.util.cmd.call(f'mkdir {self.uml_tpath}')
-        self.util.cmd.call(f'cp -r {ncs_path} {self.uml_tpath}')
 
     def get_pyang(self):
         # not formatted
@@ -89,44 +92,25 @@ ncs-uml <YangFileName>
                 raise FileNotFoundError(msg)
         return pyang_path
 
-    def generate(self, files):
-        if '--skip-uses' in files:
-            files.remove('--skip-uses')
-            self.skip_uses = True
-
-        ncs_path = self.get_ncs_path()
-        self.create_workdir(ncs_path)
+    def generate(self, yf):
+        self.create_workdir()
+        self.copy([self.get_ncs_path()] + self.opt.dpath)
         cmd = self.get_pyang()
 
-        for each in files:
-            if not self.util.file.is_file(each):
-                msg = f"could not find yang file {file} in {self.path}"
-                raise FileNotFoundError(msg)
-
-            self.log.debug("file {file} exists, fetching dependencies")
-            file = Path(each).absolute()
-            self.generate_umlfile(cmd, file)
-
-    def copy_yangs(self, file):
-        # read makefile to identify the dependency yang files
-        makefile = f"{file.parent.parent}/Makefile"
-        if not self.util.file.is_file(makefile):
-            msg = f"could not find Makefile in the following path: {makefile}"
+        if not self.util.file.is_file(yf):
+            msg = f"could not find yang file {yf} in {self.path}"
             raise FileNotFoundError(msg)
 
-        mkf = self.util.make.read(makefile)
-        yang_paths = mkf.get('YANGPATH', '').split()
-        for each in yang_paths:
-            if each == '--yangpath':
-                continue
-            self.util.cmd.call(f"cp -r {file.parent.parent}/{each} {self.uml_tpath}")
+        self.log.debug("file {file} exists, fetching dependencies")
+        file = Path(yf).expanduser().absolute()
+        self.copy(self.get_dependencies(file))
+        self.generate_umlfile(cmd, file)
 
     def generate_umlfile(self, cmd, file):
         uml_file = f"{file.stem}.uml"
-        self.copy_yangs(file)
-        cmd += f" -f uml {file} --path={self.uml_tpath}/yang"
+        cmd += f" -f uml {file} --path={self.ncs_uml}"
         cmd += f" --uml-no=module,import,annotation"
-        if not self.skip_uses:
+        if not self.opt.skip_grouping:
             cmd += f" --uml-inline-groupings"
         cmd += f" --uml-output-directory=. 1> {uml_file} 2> /dev/null"
         self.log.debug(f"command: {cmd}")
@@ -153,9 +137,3 @@ ncs-uml <YangFileName>
             lines = [f'@startuml {Path(uml_file).stem}\n'] + lines[start_index+1:end_index] + ['@enduml', '\n']
         open(f"{uml_file}", "w").writelines(lines)
 
-
-if __name__ == "__main__":
-    # uml = NcsUml()
-    # print(uml.help)
-    # print(uml.options)
-    pass

@@ -1,7 +1,5 @@
 import re
 import sys
-import random
-import string
 import logging
 import subprocess
 
