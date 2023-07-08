@@ -6,7 +6,8 @@ import optparse
 import ncs_uml
 from ncs_uml.main import NcsUml
 
-def run():
+
+def get_options():
     usage = f"""{ncs_uml.__name__} [options] [<filename>...]
 
 Creates plantUML file for the YANG module in <filename>, and all its dependencies.
@@ -40,6 +41,11 @@ It can be converted into PNG/SVG images using www.plantuml.com or with editor pl
     optparser.version = f'{ncs_uml.__name__} {ncs_uml.__version__}'
     optparser.add_options(optlist)
 
+    return optparser
+
+
+def run():
+    optparser = get_options()
     (o, args) = optparser.parse_args()
     uml = None
     if o.verbose:
@@ -52,6 +58,7 @@ It can be converted into PNG/SVG images using www.plantuml.com or with editor pl
         uml.util.exit
 
     if len(args) == 0:
+        uml.log.error("missing yang file in the command\n")
         optparser.print_help()
         uml.util.exit
 
