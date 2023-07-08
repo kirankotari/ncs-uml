@@ -25,8 +25,8 @@ setup(
     author_email = 'kirankotari@live.com',
     entry_points={
         'console_scripts': [
-            'ncs-uml=ncs_uml.run:run',
-            'ncs_uml=ncs_uml.run:run'
+            'ncs-uml=ncs_uml.scripts.run:run',
+            'ncs_uml=ncs_uml.scripts.run:run'
         ],
     },
     install_requires=reqs,
