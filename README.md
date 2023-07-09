@@ -29,12 +29,15 @@ Creates plantUML file for the YANG module in <filename>, and all its dependencie
 It can be converted into PNG/SVG images using www.plantuml.com or with editor plugins.
 
 Options:
-  -h, --help       Show this help message and exit
-  -v, --version    Show version number and exit
+  -h, --help            Show this help message and exit
+  -v, --version         Show version number and exit
   -V, --verbose
-  --skip=SKIP      skip given yang modules
+  --skip=SKIP           skip given yang modules
   --skip-grouping
-  --dpath=DPATH    dependent yang module paths
+  --dpath=DPATH         dependent yang module paths
+  --skip-module=SKIP MODULE
+                        skips given modules, i.e., --skip-module=tailf-ncs
+  --add-legend          Adds legend about grouping yang file in the UML
 ```
 
 ## Docs
@@ -45,7 +48,7 @@ Options:
   Type `ncs-uml <YangFile>`. For more help type `ncs-uml --help`
 
 ```shell
-user$ ncs-uml $NCS_DIR/examples.ncs/getting-started/developing-with-ncs/17-mpls-vpn-python/packages/l3vpn/src/yang/l3vpn.yang
+user$ ncs-uml $NCS_DIR/examples.ncs/getting-started/developing-with-ncs/17-mpls-vpn-python/packages/l3vpn/src/yang/l3vpn.yang --skip-module=tailf-ncs --add-legend
  INFO |   main | uml file: l3vpn.uml
  INFO |   main | uml clean up done.
 user$
