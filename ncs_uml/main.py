@@ -34,8 +34,9 @@ class NcsUml(metaclass=Singleton):
         # read makefile to identify the dependency yang files
         makefile = f"{file.parent.parent}/Makefile"
         if not self.util.file.is_file(makefile):
-            msg = f"could not find Makefile in the following path: {makefile}"
-            raise FileNotFoundError(msg)
+            # msg = f"could not find Makefile in the following path: {makefile}"
+            # raise FileNotFoundError(msg)
+            return '.'
 
         mkf = self.util.make.read(makefile)
         yang_paths = mkf.get('YANGPATH', '').split()
@@ -111,7 +112,11 @@ class NcsUml(metaclass=Singleton):
         cmd += f" -f uml {file} --path={self.ncs_uml}"
         cmd += f" --uml-no=module,import,annotation"
         if not self.opt.skip_grouping:
-            cmd += f" --uml-inline-groupings"
+            cmd += f" --uml-inline-groupings "
+        if getattr(self.opt, 'skip_module', False):
+            cmd += f"--uml-skip-module={','.join(self.opt.skip_module)} "
+        if getattr(self.opt, 'add_legend', False):
+            cmd += f"--uml-add-legend "
         cmd += f" --uml-output-directory=. 1> {uml_file} 2> /dev/null"
         self.log.debug(f"command: {cmd}")
         self.util.cmd.call(cmd)

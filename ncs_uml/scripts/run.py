@@ -5,7 +5,30 @@ import optparse
 
 import ncs_uml
 from ncs_uml.main import NcsUml
+from ncs_uml.utils import Command
 
+
+def get_pyang_addons():
+    addl_opt = [
+        optparse.make_option("--skip-module",
+                             dest="skip_module",
+                             action="append",
+                             default=[],
+                             metavar="SKIP MODULE",
+                             help="skips given modules, i.e., --skip-module=tailf-ncs"),
+        optparse.make_option("--add-legend",
+                             dest="add_legend",
+                             action="store_true",
+                             help="Adds legend about grouping yang file in the UML"),
+    ]
+    try:
+        cmd = Command(allow_log=False)
+        help = cmd.run(['pyang', '--help'])
+        if '--uml-skip-module' in help:
+            return addl_opt
+    except Exception as e:
+        pass
+    return []
 
 def get_options():
     usage = f"""{ncs_uml.__name__} [options] [<filename>...]
@@ -39,8 +62,8 @@ It can be converted into PNG/SVG images using www.plantuml.com or with editor pl
     ]
     optparser = optparse.OptionParser(usage, add_help_option = False)
     optparser.version = f'{ncs_uml.__name__} {ncs_uml.__version__}'
+    optlist += get_pyang_addons()
     optparser.add_options(optlist)
-
     return optparser
 
 

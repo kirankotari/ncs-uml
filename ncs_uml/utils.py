@@ -65,23 +65,25 @@ class Command(metaclass=Singleton):
     stdout = subprocess.PIPE
     stderr = subprocess.PIPE
 
-    def __init__(self):
-        self.log = Logger().setup()
+    def __init__(self, allow_log=True):
+        self.allow_log = allow_log
+        if self.allow_log:
+            self.log = Logger().setup()
 
     def decode(self, args):
         return (i.decode('utf-8') for i in args)
 
     def call(self, cmd): # _run_bash_commands
-        self.log.debug("executing $ {}".format(cmd))
+        if self.allow_log: self.log.debug("executing $ {}".format(cmd))
         try:
             subprocess.call(cmd, shell=True)
-            self.log.debug("done")
+            if self.allow_log: self.log.debug("done")
         except EnvironmentError as e:
-            self.log.error("failed to run: {}".format(cmd))
-            self.log.error(e)
+            if self.allow_log: self.log.error("failed to run: {}".format(cmd))
+            if self.allow_log: self.log.error(e)
 
     def run(self, cmd, raiseError=True): # _run_command
-        self.log.debug("executing $ {}".format(cmd))
+        if self.allow_log: self.log.debug("executing $ {}".format(cmd))
         try:
             p = subprocess.Popen(
                     cmd, 
@@ -90,19 +92,19 @@ class Command(metaclass=Singleton):
                 )
             out, err = self.decode(p.communicate())
             if err == '' or 'env.sh' in err:
-                self.log.debug('done')
+                if self.allow_log: self.log.debug('done')
                 return out
             if raiseError:
                 if '% Total' in err:
                     return err
-                self.log.debug('validating the error')
+                if self.allow_log: self.log.debug('validating the error')
                 if 'command not found' in err or 'Unknown command' in err:
                     msg = "command `{}` not found".format(cmd)
                     raise SyntaxError(msg)
                 raise SyntaxError(err)
         except SyntaxError as e:
-            self.log.error("failed to run: {}".format(cmd))
-            self.log.error(e)
+            if self.allow_log: self.log.error("failed to run: {}".format(cmd))
+            if self.allow_log: self.log.error(e)
 
 
 class MakeFile(metaclass=Singleton):
