@@ -21,14 +21,7 @@ def get_pyang_addons():
                              action="store_true",
                              help="Adds legend about grouping yang file in the UML"),
     ]
-    try:
-        cmd = Command(allow_log=False)
-        help = cmd.run(['pyang', '--help'])
-        if '--uml-skip-module' in help:
-            return addl_opt
-    except Exception as e:
-        pass
-    return []
+    return addl_opt
 
 def get_options():
     usage = f"""{ncs_uml.__name__} [options] [<filename>...]

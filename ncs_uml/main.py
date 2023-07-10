@@ -108,8 +108,9 @@ class NcsUml(metaclass=Singleton):
         self.generate_umlfile(cmd, file)
 
     def generate_umlfile(self, cmd, file):
+        path = Path(__file__).absolute().parent.as_posix()
         uml_file = f"{file.stem}.uml"
-        cmd += f" -f uml {file} --path={self.ncs_uml}"
+        cmd += f" --plugindir={path}/plugins/ -f uml {file} --path={self.ncs_uml}"
         cmd += f" --uml-no=module,import,annotation"
         if not self.opt.skip_grouping:
             cmd += f" --uml-inline-groupings "
