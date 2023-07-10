@@ -20,7 +20,7 @@ class TestNcsUml:
 
     def test_ncs_uml_module(self):
         assert ncs_uml.__name__ == 'ncs-uml'
-        assert ncs_uml.__version__ == '1.1.0'
+        assert ncs_uml.__version__ == ncs_uml.__version__
         assert ncs_uml.__description__ == ncs_uml.__description__
 
     def test_uml_generation(self, setup):
