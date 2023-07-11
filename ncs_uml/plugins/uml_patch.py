@@ -29,26 +29,36 @@ from pyang.error import err_add
 def pyang_plugin_init():
     plugin.register_plugin(UMLPatchPlugin())
 
+
 class UMLPatchPlugin(plugin.PyangPlugin):
     def add_opts(self, optparser):
-        optlist = [
-            optparse.make_option("--uml-skip-module",
-                                 dest="uml_skip_module",
+        opt1 = [
+            optparse.make_option("--uml-no-inline-groupings-from",
+                                 dest="uml_no_inline_groupings_from",
                                  action="append",
                                  default=[],
-                                 metavar="SKIP MODULE",
-                                 help="skips given modules, i.e., --uml-skip-module=tailf-ncs"),
+                                 help="Skips given modules from inline groupings. \nExample --uml-no-inline-groupings-from=ietf-yang-push")
+        ]
+        opt2 =[
             optparse.make_option("--uml-add-legend",
                                  dest="uml_add_legend",
                                  action="store_true",
                                  help="Adds legend about grouping yang file in the UML"),
             ]
+
         if hasattr(optparser, 'uml_opts'):
             g = optparser.uml_opts
         else:
             g = optparser.add_option_group("UML specific options")
             optparser.uml_opts = g
-        g.add_options(optlist)
+        try:
+            g.add_options(opt1)
+        except optparse.OptionConflictError:
+            pass
+        try:
+            g.add_options(opt2)
+        except optparse.OptionConflictError:
+            pass
 
     def add_output_format(self, fmts):
         self.multiple_modules = True
@@ -138,7 +148,7 @@ class uml_emitter:
         self.ctx_title = ctx.opts.uml_title
 
         self.ctx_inline_augments = ctx.opts.uml_inline_augments
-        self.ctx_skip_module = set(ctx.opts.uml_skip_module)
+        self.ctx_no_inline_groupings_from = set(ctx.opts.uml_no_inline_groupings_from)
         self.ctx_add_legend = ctx.opts.uml_add_legend
 
         no = ctx.opts.uml_no.split(",")
@@ -371,7 +381,7 @@ class uml_emitter:
                 if grouping_node is not None:
                     # skip grouping modules if given
                     module = str(grouping_node.main_module()).split()[-1]
-                    if module in self.ctx_skip_module:
+                    if module in self.ctx_no_inline_groupings_from:
                         fd.write('%s : %s {uses} \n' %(self.full_path(parent), node.arg))
                         return
                     # inline grouping here

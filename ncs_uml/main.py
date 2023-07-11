@@ -10,7 +10,6 @@ class NcsUml(metaclass=Singleton):
 
     command = []
     ncs_path = None
-    skip_uses = False
 
     def __init__(self, opt, *args, **kwargs):
         self.path = getcwd()
@@ -95,7 +94,7 @@ class NcsUml(metaclass=Singleton):
 
     def generate(self, yf):
         self.create_workdir()
-        self.copy([self.get_ncs_path()] + self.opt.dpath)
+        self.copy([self.get_ncs_path()] + self.opt.dependent_yang_paths)
         cmd = self.get_pyang()
 
         if not self.util.file.is_file(yf):
@@ -112,10 +111,10 @@ class NcsUml(metaclass=Singleton):
         uml_file = f"{file.stem}.uml"
         cmd += f" --plugindir={path}/plugins/ -f uml {file} --path={self.ncs_uml}"
         cmd += f" --uml-no=module,import,annotation"
-        if not self.opt.skip_grouping:
+        if not self.opt.no_inline_groupings:
             cmd += f" --uml-inline-groupings "
-        if getattr(self.opt, 'skip_module', False):
-            cmd += f"--uml-skip-module={','.join(self.opt.skip_module)} "
+        if getattr(self.opt, 'no_inline_groupings_from', False):
+            cmd += f"--uml-no-inline-groupings-from={','.join(self.opt.no_inline_groupings_from)} "
         if getattr(self.opt, 'add_legend', False):
             cmd += f"--uml-add-legend "
         cmd += f" --uml-output-directory=. 1> {uml_file} 2> /dev/null"

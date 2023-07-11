@@ -10,12 +10,11 @@ from ncs_uml.utils import Command
 
 def get_pyang_addons():
     addl_opt = [
-        optparse.make_option("--skip-module",
-                             dest="skip_module",
+        optparse.make_option("--no-inline-groupings-from",
+                             dest="no_inline_groupings_from",
                              action="append",
                              default=[],
-                             metavar="SKIP MODULE",
-                             help="skips given modules, i.e., --skip-module=tailf-ncs"),
+                             help="Skips given modules from inline groupings. \nExample --uml-no-inline-groupings-from=ietf-yang-push"),
         optparse.make_option("--add-legend",
                              dest="add_legend",
                              action="store_true",
@@ -39,16 +38,11 @@ It can be converted into PNG/SVG images using www.plantuml.com or with editor pl
                              help="Show version number and exit"),
         optparse.make_option("-V", "--verbose",
                              action="store_true"),
-        optparse.make_option("--skip",
-                             dest="skip",
-                             default=[],
-                             action="append",
-                             help="skip given yang modules"),
-        optparse.make_option("--skip-grouping",
-                             dest="skip_grouping",
+        optparse.make_option("--no-inline-groupings",
+                             dest="no_inline_groupings",
                              action="store_true"),
-        optparse.make_option("--dpath",
-                             dest="dpath",
+        optparse.make_option("--dependent-yang-paths",
+                             dest="dependent_yang_paths",
                              default=[],
                              action="append",
                              help="dependent yang module paths"),
@@ -83,3 +77,4 @@ def run():
         uml.util.exit
 
     uml.generate(args[0])
+
