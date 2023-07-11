@@ -32,11 +32,12 @@ Options:
   -h, --help            Show this help message and exit
   -v, --version         Show version number and exit
   -V, --verbose
-  --skip=SKIP           skip given yang modules
-  --skip-grouping
-  --dpath=DPATH         dependent yang module paths
-  --skip-module=SKIP MODULE
-                        skips given modules, i.e., --skip-module=tailf-ncs
+  --no-inline-groupings
+  --dependent-yang-paths=DEPENDENT_YANG_PATHS
+                        dependent yang module paths
+  --no-inline-groupings-from=NO_INLINE_GROUPINGS_FROM
+                        Skips given modules from inline groupings.  Example
+                        --uml-no-inline-groupings-from=ietf-yang-push
   --add-legend          Adds legend about grouping yang file in the UML
 ```
 
@@ -48,7 +49,7 @@ Options:
   Type `ncs-uml <YangFile>`. For more help type `ncs-uml --help`
 
 ```shell
-user$ ncs-uml $NCS_DIR/examples.ncs/getting-started/developing-with-ncs/17-mpls-vpn-python/packages/l3vpn/src/yang/l3vpn.yang --skip-module=tailf-ncs --add-legend
+user$ ncs-uml $NCS_DIR/examples.ncs/getting-started/developing-with-ncs/17-mpls-vpn-python/packages/l3vpn/src/yang/l3vpn.yang --no-inline-groupings-from=tailf-ncs --add-legend
  INFO |   main | uml file: l3vpn.uml
  INFO |   main | uml clean up done.
 user$
